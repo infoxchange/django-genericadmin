@@ -80,7 +80,10 @@ class BaseGenericModelAdmin(object):
         if hasattr(self, 'inlines') and len(self.inlines) > 0:
             for FormSet, inline in zip(self.get_formsets_with_inlines(request), self.get_inline_instances(request)):
                 if hasattr(inline, 'get_generic_field_list'):
-                    prefix = FormSet.get_default_prefix()
+                    if isinstance(FormSet, (tuple, list)):
+                        prefix = FormSet[0].get_default_prefix()
+                    else:
+                        prefix = FormSet.get_default_prefix()
                     field_list = field_list + inline.get_generic_field_list(request, prefix)
 
         return field_list
