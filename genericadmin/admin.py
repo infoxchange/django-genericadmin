@@ -2,7 +2,7 @@ import json
 from functools import update_wrapper
 
 from django.contrib import admin
-from django.conf.urls import url
+from django.urls import path
 from django.conf import settings
 try:
     from django.contrib.contenttypes.generic import GenericForeignKey,  GenericTabularInline, GenericStackedInline
@@ -12,7 +12,7 @@ except ImportError:
 
 from django.contrib.contenttypes.models import ContentType
 try:
-    from django.utils.encoding import force_text
+    from django.utils.encoding import force_str
 except ImportError:
     from django.utils.encoding import force_unicode as force_text
 from django.utils.text import capfirst
@@ -95,8 +95,8 @@ class BaseGenericModelAdmin(object):
             return update_wrapper(wrapper, view)
 
         custom_urls = [
-            url(r'^obj-data/$', wrap(self.generic_lookup), name='admin_genericadmin_obj_lookup'),
-            url(r'^genericadmin-init/$', wrap(self.genericadmin_js_init), name='admin_genericadmin_init'),
+            path('obj-data/', wrap(self.generic_lookup), name='admin_genericadmin_obj_lookup'),
+            path('genericadmin-init/', wrap(self.genericadmin_js_init), name='admin_genericadmin_init'),
         ]
         return custom_urls + super(BaseGenericModelAdmin, self).get_urls()
 
@@ -104,7 +104,7 @@ class BaseGenericModelAdmin(object):
         if request.method == 'GET':
             obj_dict = {}
             for c in ContentType.objects.all():
-                val = force_text('%s/%s' % (c.app_label, c.model))
+                val = force_str('%s/%s' % (c.app_label, c.model))
                 params = self.content_type_lookups.get('%s.%s' % (c.app_label, c.model), {})
                 params = url_params_from_lookup_dict(params)
                 if self.content_type_whitelist:
@@ -136,11 +136,11 @@ class BaseGenericModelAdmin(object):
             }
 
             content_type = ContentType.objects.get(pk=content_type_id)
-            obj_dict["content_type_text"] = capfirst(force_text(content_type))
+            obj_dict["content_type_text"] = capfirst(force_str(content_type))
 
             try:
                 obj = content_type.get_object_for_this_type(pk=object_id)
-                obj_dict["object_text"] = capfirst(force_text(obj))
+                obj_dict["object_text"] = capfirst(force_str(obj))
             except ObjectDoesNotExist:
                 raise Http404
 
